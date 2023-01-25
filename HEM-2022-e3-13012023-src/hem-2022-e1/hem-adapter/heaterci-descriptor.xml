@@ -1,0 +1,62 @@
+<control-adapter
+    xmlns="http://www.sorbonne-universite.fr/alasca/control-adapter"
+    uid="1A10001"
+    offered="fr.sorbonne_u.components.hem2022e1.equipments.heater.HeaterCI"
+    type="suspension">
+  <consumption nominal="2000"/>
+  <required>java.lang.Math</required>
+  <instance-var type="boolean" name="isSuspended" static-init="false"/>
+  <on>
+    <body equipmentRef="heater">
+      return isSuspended || heater.isRunning();
+    </body>
+  </on>
+  <switchOn>
+    <body equipmentRef="heater">
+      heater.startHeater();
+      return true;
+    </body>
+  </switchOn>
+  <switchOff>
+    <body equipmentRef="heater">
+      heater.stopHeater();
+      return true;
+    </body>
+  </switchOff>
+  <mode-control>
+    <maxMode><body>return 1;</body></maxMode>
+    <upMode><body>return false;</body></upMode>
+    <downMode><body>return false;</body></downMode>
+    <setMode><parameter name="modeIndex"/><body>return false;</body></setMode>
+    <currentMode><body>return 1;</body></currentMode>
+  </mode-control>
+  <suspension-control>
+    <suspended><body>return isSuspended;</body></suspended>
+    <suspend>
+      <body equipmentRef="heater">
+	heater.stopHeater();
+	isSuspended = true;
+        return true;
+      </body>
+    </suspend>
+    <resume>
+      <body equipmentRef="heater">
+	heater.startHeater();
+	isSuspended = false;
+        return true;
+      </body>
+    </resume>
+    <emergency>
+      <body equipmentRef="heater">
+        double currentTemperature = heater.getCurrentTemperature();
+        double targetTemperature = heater.getTargetTemperature();
+        double delta = Math.abs(targetTemperature - currentTemperature);
+        if (currentTemperature &lt; 12.0 || delta &gt;= 10.0) {
+          return 1.0;
+        } else {
+          return delta/10.0;
+        }
+      </body>
+    </emergency>
+  </suspension-control>
+</control-adapter>

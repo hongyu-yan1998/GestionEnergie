@@ -1,0 +1,90 @@
+<!-- fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden ------------ -->
+<html>
+<body>
+<p><b>Indoor garden for the household energy manager project.</b></p>
+
+<table border="2" width="100%">
+<tr><th align="left" colspan="1">Licence</th></tr>
+<tr>
+<td width="100%">
+<p>Copyright Jacques Malenfant, Sorbonne Universite.</p>
+<p>Jacques.Malenfant@lip6.fr</p>
+
+<p>
+This software is a computer program whose purpose is to provide a basic
+household management systems as an example of a cyber-physical system.
+</p>
+<p>
+This software is governed by the
+<a href="../../../../images/Licence_CeCILL-C_V1-en.html">CeCILL-C</a>
+license under French law and
+abiding by the rules of distribution of free software.  You can use,
+modify and/ or redistribute the software under the terms of the
+CeCILL-C license as circulated by CEA, CNRS and INRIA at the following
+URL <a href="http://www.cecill.info">http://www.cecill.info</a>.
+</p>
+<p>
+As a counterpart to the access to the source code and  rights to copy,
+modify and redistribute granted by the license, users are provided only
+with a limited warranty  and the software's author,  the holder of the
+economic rights,  and the successive licensors  have only  limited
+liability. 
+</p>
+<p>
+In this respect, the user's attention is drawn to the risks associated
+with loading,  using,  modifying and/or developing or reproducing the
+software by the user in light of its specific status of free software,
+that may mean  that it is complicated to manipulate,  and  that  also
+therefore means  that it is reserved for developers  and  experienced
+professionals having in-depth computer knowledge. Users are therefore
+encouraged to load and test the software's suitability as regards their
+requirements in conditions enabling the security of their systems and/or 
+data to be ensured and,  more generally, to use and operate it in the 
+same conditions as regards security. 
+</p>
+<p>
+The fact that you are presently reading this means that you have had
+knowledge of the CeCILL-C license and that you accept its terms.
+</p>
+</td>
+</tr>
+</table>
+
+<p>
+This package contains the software implementing an indoor garden appliance for
+the household energy management project. This projects aims at implementing an
+intelligent energy management system able to ensure in real time the balance
+between the production and the consumption of electricity in an autonomous
+house having its own green electricity production units as well as batteries.
+</p>
+<p>
+The indoor garden is a simple plant growing appliance that provides light
+for a given duration each day. The appliance is implemented by the component
+<code>IndoorGarden</code>. It is assumed to be programmable <i>i.e.</i>, the
+times at which the light is switched on and off during the day, can be planned
+in advance. It is also assumed to be temporarily deactivated <i>i.e.</i>, the
+light will be switched off until a reactivation order is given. The mix of
+planning and activation implies a relatively complex state model within which
+the appliance navigates through operations implemented as services:
+<code>switchOn()</code>, <code>switchOff</code>, <code>switchLightOn()</code>, 
+<code>switchLightOff</code>, <code>deactivate()</code> and
+<code>reactivate()</code>. The following automata shows the state space and
+the transitions triggered by calling these operations:
+</p>
+<img src="../../../../../../00images/indoor-garden.gif" alt="indoor-garden.gif"/>
+<p>
+The component is defined around its offered interface
+<code>IndoorGardenCI</code>, which is implemented both by the connection
+elements (ports, connector) in the package
+<code>fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.connections</code>.
+It is unit tested with components and deployments provide in the package
+<code>fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.test</code>.
+As a cyber-physical component, the indoor garden needs to be simulated for
+testing as "software-in-the-loop" simulations. The simulation models for this
+are implemented in the package
+<code>fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil</code>.
+</p>
+
+</body>
+</html>
+<!-- ----------------------------------------------------------------------- -->

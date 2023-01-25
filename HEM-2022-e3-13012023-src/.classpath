@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="src" path="hem-2022-base"/>
+	<classpathentry kind="src" path="hem-2022-e1"/>
+	<classpathentry kind="src" path="hem-2022-e2"/>
+	<classpathentry kind="src" path="hem-2022-e3"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/BCM4Java-19092022.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/BCM4Java-CyPhy-28112022.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/javassist.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/jfreechart-1.6.0-snapshot.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/jing.jar"/>
+	<classpathentry kind="lib" path="D:/eclipse-workspaceCPS/Simulation-28112022.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

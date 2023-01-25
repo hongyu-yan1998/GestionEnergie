@@ -1,0 +1,215 @@
+<control-adapter
+    xmlns="http://www.sorbonne-universite.fr/alasca/control-adapter"
+    uid="1A10001"
+    offered="fr.sorbonne_u.components.hem2022e1.equipments.heater.IndoorGardenCI"
+    type="suspension-and-planning">
+  <consumption nominal="100"/>
+  <required>java.time.LocalTime</required>
+  <required>java.time.Duration</required>
+  <instance-var type="boolean" name="isSuspended" static-init="false"/>
+  <on><body equipmentRef="ig">return ig.isOn();</body></on>
+  <switchOn>
+    <body equipmentRef="ig">
+      if (ig.isOn()) {
+          return false;
+      }
+      ig.on();
+      return true;
+    </body>
+  </switchOn>
+  <switchOff>
+    <body equipmentRef="ig">
+      if (!ig.isOn()) {
+          return false;
+      }
+      ig.off();
+      return true;
+    </body>
+  </switchOff>
+  <mode-control>
+    <maxMode><body>return 1;</body></maxMode>
+    <upMode><body>return false;</body></upMode>
+    <downMode><body>return false;</body></downMode>
+    <setMode><parameter name="modeIndex"/><body>return false;</body></setMode>
+    <currentMode><body>return 1;</body></currentMode>
+  </mode-control>
+  <suspension-control>
+    <suspended>
+      <body>
+        if (!ig.isOn()) {
+            return false;
+        }
+        return isSuspended;
+      </body>
+    </suspended>
+    <suspend>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || isSuspended) {
+            return false;
+        }
+        if (ig.isLightPlanned()) {
+            ig.deactivate();
+        }
+        isSuspended = true;
+        return true;			
+      </body>
+    </suspend>
+    <resume>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || !isSuspended) {
+            return false;
+        }
+        if (ig.isLightPlanned()) {
+            ig.reactivate();
+        }
+        isSuspended = false;
+        return true;
+      </body>
+    </resume>
+    <emergency>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || !ig.isLightPlanned()) {
+            return 0.0;
+        }
+        if (ig.isDeactivated()) {
+            LocalTime timeOn = ig.getPlannedLightOn();
+            LocalTime timeOff = ig.getPlannedLightOff();
+            LocalTime current = ig.getCurrentTime();
+            assert current.isAfter(timeOn) &amp;&amp; current.isBefore(timeOff);
+            Duration left = null;
+            if (timeOn.isBefore(timeOff)) {
+                left = Duration.between(current, timeOff);
+            } else {
+                left = Duration.between(current, LocalTime.MIDNIGHT).
+                         plus(Duration.between(LocalTime.MIDNIGHT, timeOff));
+            }
+            double timeLeft = left.toNanos();
+	    Duration span = null;
+            if (timeOn.isBefore(timeOff)) {
+                span = Duration.between(timeOn, timeOff);
+            } else {
+                span = Duration.between(timeOn, LocalTime.MIDNIGHT).
+                         plus(Duration.between(LocalTime.MIDNIGHT, timeOff));
+            }
+            double timeSpan = span.toNanos();
+            return 1.0 - timeLeft/timeSpan;
+        } else {
+            return 0;			
+        }
+      </body>
+    </emergency>
+  </suspension-control>
+  <planning-control>
+    <hasPlan>
+      <body equipmentRef="ig">
+	if (!ig.isOn()) {
+            return false;
+        }
+        return ig.isLightPlanned();
+      </body>
+    </hasPlan>
+    <isPlanRunning>
+      <body equipmentRef="ig">
+        if (!ig.isOn()) {
+            return false;
+        }
+        if (ig.isLightPlanned()) {
+            LocalTime timeOn = ig.getPlannedLightOn();
+            LocalTime timeOff = ig.getPlannedLightOff();
+            LocalTime current = ig.getCurrentTime();
+            if (timeOn.isBefore(timeOff)) {
+                return current.isAfter(timeOn) &amp;&amp; current.isBefore(timeOff);
+            } else {
+                return current.isAfter(timeOn) || current.isBefore(timeOff);
+            }
+        } else {
+            return false;
+        }
+      </body>
+    </isPlanRunning>
+    <startTime>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || !ig.isLightPlanned()) {
+            return null;
+        }
+        return ig.getPlannedLightOn();
+      </body>
+    </startTime>
+    <duration>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || !ig.isLightPlanned()) {
+            return null;
+        }
+        if (timeOn.isBefore(timeOff)) {
+            return Duration.between(ig.getPlannedLightOn(),
+                                    ig.getPlannedLightOff());
+        } else {
+            return Duration.between(ig.getPlannedLightOn(), LocalTime.MIDNIGHT).
+                       plus(Duration.between(LocalTime.MIDNIGHT, ig.getPlannedLightOff()));
+        }
+      </body>
+    </duration>
+    <deadline>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || !ig.isLightPlanned()) {
+            return null;
+        }
+        LocalTime s = ig.getPlannedLightOn();
+	LocalTime e = ig.getPlannedLightOff();
+	Duration d = null;
+	if (s.isBefore(e)) {
+            d = Duration.between(s, e);
+        } else {
+            d = Duration.between(s, LocalTime.MIDNIGHT).
+                    plus(LocalTime.MIDNIGHT, e);
+	}
+        d = d.dividedBy(2L);
+        return s.plus(d);
+      </body>
+    </deadline>
+    <postpone>
+      <parameter name="d"/>
+      <body equipmentRef="ig">
+        if (!ig.isOn() || !ig.isLightPlanned() || isPlanRunning()
+                                            || ig.isDeactivated()) {
+            return false;
+        }
+        LocalTime s = ig.getPlannedLightOn();
+        LocalTime e = ig.getPlannedLightOff();
+	if (d.isNegative()) {
+            ig.cancelPlanLight();
+            ig.planLight(timeOn.plus(d), timeOff.plus(d));
+            return true;
+	} else {
+            Duration planned = this.computeDuration(timeOn, timeOff);
+            if (s.isBefore(e)) {
+                d = Duration.between(s, e);
+            } else {
+                d = Duration.between(s, LocalTime.MIDNIGHT).
+                        plus(LocalTime.MIDNIGHT, e);
+            }
+            if (d.compareTo(planned) &lt; 0) {
+                ig.cancelPlanLight();
+                ig.planLight(timeOn.plus(d), timeOff.plus(d));
+                return true;
+            } else {
+                return false;
+            }
+        }
+      </body>
+    </postpone>
+    <cancel>
+      <body equipmentRef="ig">
+        if (!ig.isOn() ) {
+            return false;
+        }
+        if (ig.isLightPlanned()) {
+            ig.cancelPlanLight();
+            return true;
+        } else {
+            return false;
+        }
+      </body>
+    </cancel>
+  </planning-control>
+</control-adapter>
