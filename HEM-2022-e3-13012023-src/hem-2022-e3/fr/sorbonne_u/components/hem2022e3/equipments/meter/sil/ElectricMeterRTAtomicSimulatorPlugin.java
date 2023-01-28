@@ -33,6 +33,9 @@ package fr.sorbonne_u.components.hem2022e3.equipments.meter.sil;
 // knowledge of the CeCILL-C license and that you accept its terms.
 
 import fr.sorbonne_u.components.cyphy.plugins.devs.RTAtomicSimulatorPlugin;
+import fr.sorbonne_u.components.hem2022e3.equipments.airconditioner.sil.AirConditionerElectricityModel;
+import fr.sorbonne_u.components.hem2022e3.equipments.airconditioner.sil.events.TurnOffAirConditioner;
+import fr.sorbonne_u.components.hem2022e3.equipments.airconditioner.sil.events.TurnOnAirConditioner;
 import fr.sorbonne_u.components.hem2022e3.equipments.hairdryer.sil.HairDryerElectricityModel;
 import fr.sorbonne_u.components.hem2022e3.equipments.hairdryer.sil.events.SetHighHairDryer;
 import fr.sorbonne_u.components.hem2022e3.equipments.hairdryer.sil.events.SetLowHairDryer;
@@ -48,6 +51,11 @@ import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.Swi
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchLightOnIndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchOffIndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchOnIndoorGarden;
+import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.RefrigeratorElectricityModel;
+import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.DoNotRun;
+import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.Run;
+import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.StartRefrigerator;
+import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.StopRefrigerator;
 import fr.sorbonne_u.devs_simulation.architectures.RTArchitecture;
 import fr.sorbonne_u.devs_simulation.architectures.SimulationEngineCreationMode;
 import fr.sorbonne_u.devs_simulation.hioa.architectures.RTAtomicHIOA_Descriptor;
@@ -192,6 +200,28 @@ extends		RTAtomicSimulatorPlugin
 						null,
 						SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
 						accFactor));
+		
+		// Air Conditioner
+		atomicModelDescriptors.put(
+				AirConditionerElectricityModel.URI,
+				RTAtomicHIOA_Descriptor.create(
+						AirConditionerElectricityModel.class,
+						AirConditionerElectricityModel.URI,
+						TimeUnit.HOURS,
+						null,
+						SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
+						accFactor));
+		// Refrigerator
+		atomicModelDescriptors.put(
+				RefrigeratorElectricityModel.URI,
+				RTAtomicHIOA_Descriptor.create(
+						RefrigeratorElectricityModel.class,
+						RefrigeratorElectricityModel.URI,
+						TimeUnit.HOURS,
+						null,
+						SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
+						accFactor));
+		
 		atomicModelDescriptors.put(
 				ElectricMeterElectricityModel.URI,
 				RTAtomicHIOA_Descriptor.create(
@@ -208,6 +238,8 @@ extends		RTAtomicSimulatorPlugin
 		submodels.add(HeaterElectricityModel.URI);
 		submodels.add(IndoorGardenElectricityModel.URI);
 		submodels.add(ElectricMeterElectricityModel.URI);
+		submodels.add(AirConditionerElectricityModel.URI);
+		submodels.add(RefrigeratorElectricityModel.URI);
 
 		bindings.put(
 				new VariableSource("currentIntensity",
@@ -233,6 +265,28 @@ extends		RTAtomicSimulatorPlugin
 						   IndoorGardenElectricityModel.URI),
 				new VariableSink[] {
 						new VariableSink("currentIndoorGardenIntensity",
+										 Double.class,
+										 ElectricMeterElectricityModel.URI)
+				});
+		
+		// Air Conditioner
+		bindings.put(
+				new VariableSource("currentIntensity",
+						   Double.class,
+						   AirConditionerElectricityModel.URI),
+				new VariableSink[] {
+						new VariableSink("currentAirConditionerIntensity",
+										 Double.class,
+										 ElectricMeterElectricityModel.URI)
+				});
+		
+		// Refrigerator
+		bindings.put(
+				new VariableSource("currentIntensity",
+						   Double.class,
+						   RefrigeratorElectricityModel.URI),
+				new VariableSink[] {
+						new VariableSink("currentRefrigeratorIntensity",
 										 Double.class,
 										 ElectricMeterElectricityModel.URI)
 				});
@@ -299,6 +353,40 @@ extends		RTAtomicSimulatorPlugin
 							 new EventSink(IndoorGardenElectricityModel.URI,
 									 	   SwitchLightOffIndoorGarden.class)
 					 });
+		
+		// Air Conditioner
+		imported.put(TurnOnAirConditioner.class,
+				 new EventSink[] {
+						 new EventSink(AirConditionerElectricityModel.URI,
+								 	   TurnOnAirConditioner.class)
+				 });
+		imported.put(TurnOffAirConditioner.class,
+				 new EventSink[] {
+						 new EventSink(AirConditionerElectricityModel.URI,
+								 	   TurnOffAirConditioner.class)
+				 });
+		
+		// Refrigerator
+		imported.put(StartRefrigerator.class,
+				 new EventSink[] {
+						 new EventSink(RefrigeratorElectricityModel.URI,
+								 		StartRefrigerator.class)
+				 });
+		imported.put(StopRefrigerator.class,
+				 new EventSink[] {
+						 new EventSink(RefrigeratorElectricityModel.URI,
+								 		StopRefrigerator.class)
+				 });
+		imported.put(Run.class,
+				 new EventSink[] {
+						 new EventSink(RefrigeratorElectricityModel.URI,
+								 		Run.class)
+				 });
+		imported.put(DoNotRun.class,
+				 new EventSink[] {
+						 new EventSink(RefrigeratorElectricityModel.URI,
+								 		DoNotRun.class)
+				 });
 
 		// coupled model descriptor
 		coupledModelDescriptors.put(

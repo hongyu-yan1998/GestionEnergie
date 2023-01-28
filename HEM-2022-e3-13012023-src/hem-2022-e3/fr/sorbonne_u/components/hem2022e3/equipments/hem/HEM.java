@@ -45,11 +45,14 @@ import fr.sorbonne_u.components.hem2022.interfaces.StandardEquipmentControlCI;
 import fr.sorbonne_u.components.hem2022.interfaces.SuspensionAndPlanningEquipmentControlCI;
 import fr.sorbonne_u.components.hem2022.interfaces.SuspensionEquipmentControlCI;
 import fr.sorbonne_u.components.hem2022e1.equipments.hem.HeaterConnector;
+import fr.sorbonne_u.components.hem2022e1.equipments.hem.IndoorGardenConnector;
 import fr.sorbonne_u.components.hem2022e1.equipments.hem.SuspensionAndPlanningEquipmentControlOutboundPort;
 import fr.sorbonne_u.components.hem2022e1.equipments.hem.SuspensionEquipmentControlOutboundPort;
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterCI;
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterConnector;
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterOutboundPort;
+import fr.sorbonne_u.components.hem2022e3.equipments.airconditioner.AirConditioner;
+import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.Refrigerator;
 import fr.sorbonne_u.components.hem2022e3.equipments.heater.ThermostatedHeater;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.IndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.ElectricMeter;
@@ -107,8 +110,12 @@ extends		AbstractComponent
 	protected ElectricMeterOutboundPort							meterop;
 	/** outbound port connecting to to the thermostated heater component.	*/
 	protected SuspensionEquipmentControlOutboundPort			heaterop;
+	/** outbound port connecting to to the refrigerator component.	*/
+	protected SuspensionEquipmentControlOutboundPort			refrigeratorop;
 	/** outbound port connecting to to the indoor garden component.			*/
 	protected SuspensionAndPlanningEquipmentControlOutboundPort	indoorGardenop;
+	/** outbound port connecting to to the air conditioner component.			*/
+	protected SuspensionAndPlanningEquipmentControlOutboundPort	airConditionerop;
 
 	/** standard control period in seconds.									*/
 	protected static final double		STANDARD_CONTROL_PERIOD = 60.0;
@@ -168,9 +175,6 @@ extends		AbstractComponent
 	// Component life-cycle
 	// -------------------------------------------------------------------------
 
-	/**
-	 * @see fr.sorbonne_u.components.AbstractComponent#start()
-	 */
 	@Override
 	public synchronized void	start() throws ComponentStartException
 	{
@@ -190,6 +194,13 @@ extends		AbstractComponent
 					this.heaterop.getPortURI(),
 					ThermostatedHeater.INBOUND_PORT_URI,
 					HeaterConnector.class.getCanonicalName());
+			
+			/*
+			 * this.refrigeratorop = new SuspensionEquipmentControlOutboundPort(this);
+			 * this.refrigeratorop.publishPort(); this.doPortConnection(
+			 * this.refrigeratorop.getPortURI(), Refrigerator.INBOUND_PORT_URI,
+			 * RefrigeratorConnector.class.getCanonicalName());
+			 */
 
 			this.indoorGardenop =
 					new SuspensionAndPlanningEquipmentControlOutboundPort(this);
@@ -198,6 +209,14 @@ extends		AbstractComponent
 					this.indoorGardenop.getPortURI(),
 					IndoorGarden.INBOUND_PORT_URI_PREFIX,
 					IndoorGardenConnector.class.getCanonicalName());
+			
+			this.airConditionerop =
+					new SuspensionAndPlanningEquipmentControlOutboundPort(this);
+			this.airConditionerop.publishPort();
+			this.doPortConnection(
+					this.airConditionerop.getPortURI(),
+					AirConditioner.INBOUND_PORT_URI_PREFIX,
+					AirConditionerConnector.class.getCanonicalName());
 
 			if (this.isUnderTest) {
 				this.clockServerOBP = new ClockServerOutboundPort(this);
@@ -212,9 +231,6 @@ extends		AbstractComponent
 		}
 	}
 
-	/**
-	 * @see fr.sorbonne_u.components.AbstractComponent#execute()
-	 */
 	@Override
 	public synchronized void	execute() throws Exception
 	{
@@ -239,28 +255,26 @@ extends		AbstractComponent
 				TimeUnit.NANOSECONDS);
 	}
 
-	/**
-	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
-	 */
 	@Override
 	public synchronized void	finalise() throws Exception
 	{
 		this.doPortDisconnection(this.meterop.getPortURI());
 		this.doPortDisconnection(this.heaterop.getPortURI());
+//		this.doPortDisconnection(this.refrigeratorop.getPortURI());
 		this.doPortDisconnection(this.indoorGardenop.getPortURI());
+		this.doPortDisconnection(this.airConditionerop.getPortURI());
 		super.finalise();
 	}
 
-	/**
-	 * @see fr.sorbonne_u.components.AbstractComponent#shutdown()
-	 */
 	@Override
 	public synchronized void	shutdown() throws ComponentShutdownException
 	{
 		try {
 			this.meterop.unpublishPort();
 			this.heaterop.unpublishPort();
+//			this.refrigeratorop.unpublishPort();
 			this.indoorGardenop.unpublishPort();
+			this.airConditionerop.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}

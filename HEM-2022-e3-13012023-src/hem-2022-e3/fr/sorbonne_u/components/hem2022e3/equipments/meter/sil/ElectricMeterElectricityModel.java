@@ -89,6 +89,10 @@ import fr.sorbonne_u.devs_simulation.utils.StandardLogger;
 					   type = Double.class)
 @ModelImportedVariable(name = "currentIndoorGardenIntensity",
 					   type = Double.class)
+@ModelImportedVariable(name = "currentAirConditionerIntensity",
+					   type = Double.class)
+@ModelImportedVariable(name = "currentRefrigeratorIntensity",
+					   type = Double.class)
 //-----------------------------------------------------------------------------
 public class			ElectricMeterElectricityModel
 extends		AtomicHIOA
@@ -125,6 +129,12 @@ extends		AtomicHIOA
 	/** current intensity of the indoor garden in amperes.					*/
 	@ImportedVariable(type = Double.class)
 	protected Value<Double>			currentIndoorGardenIntensity;
+	/** current intensity of the air conditioner in amperes.					*/
+	@ImportedVariable(type = Double.class)
+	protected Value<Double>			currentAirConditionerIntensity;
+	/** current intensity of the refrigerator in amperes.					*/
+	@ImportedVariable(type = Double.class)
+	protected Value<Double>			currentRefrigeratorIntensity;
 
 	/** current total intensity of the house in amperes.					*/
 	@InternalVariable(type = Double.class)
@@ -206,8 +216,9 @@ extends		AtomicHIOA
 		// simple sum of all incoming intensities
 		double i = this.currentHairDryerIntensity.getValue() +
 				   this.currentHeaterIntensity.getValue() +
-				   this.currentIndoorGardenIntensity.getValue();
-
+				   this.currentIndoorGardenIntensity.getValue() +
+				   this.currentAirConditionerIntensity.getValue() +
+				   this.currentRefrigeratorIntensity.getValue();
 		// Tracing
 //		if (this.currentIntensity.isInitialised()) {
 //			StringBuffer message = new StringBuffer("current total consumption: ");
@@ -259,7 +270,9 @@ extends		AtomicHIOA
 		if (!this.currentIntensity.isInitialised() &&
 							this.currentHairDryerIntensity.isInitialised() &&
 							this.currentHeaterIntensity.isInitialised() &&
-							this.currentIndoorGardenIntensity.isInitialised()) {
+							this.currentIndoorGardenIntensity.isInitialised() &&
+							this.currentAirConditionerIntensity.isInitialised() &&
+							this.currentRefrigeratorIntensity.isInitialised()) {
 			double i = this.computeTotalIntensity();
 			this.currentIntensity.initialise(i);
 			this.currentConsumption.initialise(0.0);
