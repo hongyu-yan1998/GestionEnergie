@@ -38,14 +38,22 @@ public class RunScolarPanelUnitaryMILSimulation
 			Map<String,AbstractAtomicModelDescriptor> atomicModelDescriptors =
 															new HashMap<>();
 
-			// the scolar panel models simulating its electricity consumption, its
-			// temperatures and the external temperature are atomic HIOA models
-			// hence we use an AtomicHIOA_Descriptor(s)
+			// the indoor garden model simulating its electricity consumption,
+			// an atomic HIOA model hence we use an AtomicHIOA_Descriptor
 			atomicModelDescriptors.put(
 					SolarPanelElectricityModel.URI,
 					AtomicHIOA_Descriptor.create(
 							SolarPanelElectricityModel.class,
 							SolarPanelElectricityModel.URI,
+							TimeUnit.HOURS,
+							null,
+							SimulationEngineCreationMode.ATOMIC_ENGINE));
+			// for atomic model, we use an AtomicModelDescriptor
+			atomicModelDescriptors.put(
+					SolarPanelStateModel.URI,
+					AtomicModelDescriptor.create(
+							SolarPanelStateModel.class,
+							SolarPanelStateModel.URI,
 							TimeUnit.HOURS,
 							null,
 							SimulationEngineCreationMode.ATOMIC_ENGINE));
@@ -66,6 +74,7 @@ public class RunScolarPanelUnitaryMILSimulation
 			// the set of submodels of the coupled model, given by their URIs
 			Set<String> submodels = new HashSet<String>();
 			submodels.add(SolarPanelElectricityModel.URI);
+			submodels.add(SolarPanelStateModel.URI);
 			submodels.add(SolarPanelTestModel.URI);
 			
 			// event exchanging connections between exporting and importing
@@ -73,15 +82,30 @@ public class RunScolarPanelUnitaryMILSimulation
 			Map<EventSource,EventSink[]> connections =
 										new HashMap<EventSource,EventSink[]>();
 
+
 			connections.put(
 					new EventSource(SolarPanelTestModel.URI,
+									SolarProduce.class),
+					new EventSink[] {
+							new EventSink(SolarPanelStateModel.URI,
+									SolarProduce.class)
+					});
+			connections.put(
+					new EventSource(SolarPanelTestModel.URI,
+									SolarNotProduce.class),
+					new EventSink[] {
+							new EventSink(SolarPanelStateModel.URI,
+									SolarNotProduce.class)
+					});
+			connections.put(
+					new EventSource(SolarPanelStateModel.URI,
 									SolarProduce.class),
 					new EventSink[] {
 							new EventSink(SolarPanelElectricityModel.URI,
 									SolarProduce.class)
 					});
 			connections.put(
-					new EventSource(SolarPanelTestModel.URI,
+					new EventSource(SolarPanelStateModel.URI,
 									SolarNotProduce.class),
 					new EventSink[] {
 							new EventSink(SolarPanelElectricityModel.URI,

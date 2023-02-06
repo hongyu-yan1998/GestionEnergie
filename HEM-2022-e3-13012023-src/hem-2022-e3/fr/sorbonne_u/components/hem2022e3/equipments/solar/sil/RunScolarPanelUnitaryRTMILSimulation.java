@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarNotProduce;
 import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarProduce;
 import fr.sorbonne_u.devs_simulation.architectures.Architecture;
@@ -17,6 +16,7 @@ import fr.sorbonne_u.devs_simulation.architectures.SimulationEngineCreationMode;
 import fr.sorbonne_u.devs_simulation.hioa.architectures.RTAtomicHIOA_Descriptor;
 import fr.sorbonne_u.devs_simulation.models.architectures.AbstractAtomicModelDescriptor;
 import fr.sorbonne_u.devs_simulation.models.architectures.RTAtomicModelDescriptor;
+import fr.sorbonne_u.devs_simulation.models.architectures.RTCoupledModelDescriptor;
 import fr.sorbonne_u.devs_simulation.models.architectures.CoupledModelDescriptor;
 import fr.sorbonne_u.devs_simulation.models.events.EventSink;
 import fr.sorbonne_u.devs_simulation.models.events.EventSource;
@@ -53,7 +53,17 @@ public class RunScolarPanelUnitaryRTMILSimulation {
 							SolarPanelElectricityModel.URI,
 							TimeUnit.HOURS,
 							null,
-							SimulationEngineCreationMode.ATOMIC_ENGINE,
+							SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
+							ACC_FACTOR));
+			// for atomic model, we use an AtomicModelDescriptor
+			atomicModelDescriptors.put(
+					SolarPanelStateModel.URI,
+					RTAtomicModelDescriptor.create(
+							SolarPanelStateModel.class,
+							SolarPanelStateModel.URI,
+							TimeUnit.HOURS,
+							null,
+							SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
 							ACC_FACTOR));
 			atomicModelDescriptors.put(
 					SolarPanelTestModel.URI,
@@ -62,7 +72,7 @@ public class RunScolarPanelUnitaryRTMILSimulation {
 							SolarPanelTestModel.URI,
 							TimeUnit.HOURS,
 							null,
-							SimulationEngineCreationMode.ATOMIC_ENGINE,
+							SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
 							ACC_FACTOR));
 
 			// map that will contain the coupled model descriptors to construct
@@ -73,22 +83,37 @@ public class RunScolarPanelUnitaryRTMILSimulation {
 			// the set of submodels of the coupled model, given by their URIs
 			Set<String> submodels = new HashSet<String>();
 			submodels.add(SolarPanelElectricityModel.URI);
+			submodels.add(SolarPanelStateModel.URI);
 			submodels.add(SolarPanelTestModel.URI);
 			
 			// event exchanging connections between exporting and importing
 			// models
 			Map<EventSource,EventSink[]> connections =
-										new HashMap<EventSource,EventSink[]>();
+									new HashMap<EventSource,EventSink[]>();
 
 			connections.put(
 					new EventSource(SolarPanelTestModel.URI,
+									SolarProduce.class),
+					new EventSink[] {
+							new EventSink(SolarPanelStateModel.URI,
+									SolarProduce.class)
+					});
+			connections.put(
+					new EventSource(SolarPanelTestModel.URI,
+									SolarNotProduce.class),
+					new EventSink[] {
+							new EventSink(SolarPanelStateModel.URI,
+									SolarNotProduce.class)
+					});
+			connections.put(
+					new EventSource(SolarPanelStateModel.URI,
 									SolarProduce.class),
 					new EventSink[] {
 							new EventSink(SolarPanelElectricityModel.URI,
 									SolarProduce.class)
 					});
 			connections.put(
-					new EventSource(SolarPanelTestModel.URI,
+					new EventSource(SolarPanelStateModel.URI,
 									SolarNotProduce.class),
 					new EventSink[] {
 							new EventSink(SolarPanelElectricityModel.URI,
@@ -98,7 +123,7 @@ public class RunScolarPanelUnitaryRTMILSimulation {
 			// coupled model descriptor
 			coupledModelDescriptors.put(
 					SolarPanelCoupledModel.URI,
-					new CoupledModelDescriptor(
+					new RTCoupledModelDescriptor(
 							SolarPanelCoupledModel.class,
 							SolarPanelCoupledModel.URI,
 							submodels,
@@ -106,7 +131,8 @@ public class RunScolarPanelUnitaryRTMILSimulation {
 							null,
 							connections,
 							null,
-							SimulationEngineCreationMode.COORDINATION_ENGINE));
+							SimulationEngineCreationMode.COORDINATION_RT_ENGINE,
+							ACC_FACTOR));
 
 			// simulation architecture
 			ArchitectureI architecture =
@@ -118,12 +144,20 @@ public class RunScolarPanelUnitaryRTMILSimulation {
 
 			// create the simulator from the simulation architecture
 			SimulationEngine se = architecture.constructSimulator();
-			// this add additional time at each simulation step in
-			// standard simulations (useful when debugging)
-			SimulationEngine.SIMULATION_STEP_SLEEP_TIME = 0L;
-			// run a simulation with the simulation beginning at 0.0 and
-			// ending at 24.0
-			se.doStandAloneSimulation(0.0, 24.0);
+
+			// duration of the simulation in hours, the simulation time unit
+			double simDuration = 24.0;
+			// the real time of start of the simulation plus a 1s delay to give
+			// the time to initialise all models in the architecture.
+			long start = System.currentTimeMillis() + 100;
+			se.startRTSimulation(start, 0.0, simDuration);
+			// wait until the simulation ends i.e., the start delay  plus the
+			// duration of the simulation in milliseconds plus another 2s delay
+			// to make sure...
+			Thread.sleep(
+					1000L
+					+ ((long)((simDuration*3600*1000.0)/ACC_FACTOR))
+					+ 2000L);
 			System.exit(0);
 		} catch (Exception e) {
 			throw new RuntimeException(e) ;

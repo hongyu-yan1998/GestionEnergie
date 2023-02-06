@@ -3,7 +3,14 @@
  */
 package fr.sorbonne_u.components.hem2022e3.equipments.solar.test;
 
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
+import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.cyphy.tools.aclocks.ClockServer;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.SolarPanel;
+import fr.sorbonne_u.devs_simulation.simulators.AtomicRTEngine;
 
 /**
  * The class <code>CVMUnitTest</code> 
@@ -21,15 +28,6 @@ extends AbstractCVM
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
-	/** when true, the run will be SIL simulated, otherwise it will be
-	 *  a test without simulation.											*/
-	public static final boolean IS_SIMULATED = true;
-	/** when true, the run is a test, which is always the case for this
-	 *  deployment.															*/
-	public static final boolean IS_UNDER_TEST = true;
-	/** when true, the run is a unit test, which is always the case for
-	 *  this deployment.													*/
-	public static final boolean IS_UNIT_TESTING = true;
 	/** acceleration factor for the real time execution; it controls how fast
 	 *  the simulation will run but keeping the same time structure as a real
 	 *  time simulation running exactly at the pace of physical time; currently,
@@ -37,7 +35,7 @@ extends AbstractCVM
 	 *  of the Java thread scheduler, this factor must be chosen in such a way
 	 *  that intervals between simulation transitions or the execution of pieces
 	 *  of code do not fall under 10 milliseconds approximately.			*/
-	public static final double	ACC_FACTOR = IS_SIMULATED ? 600.0 : 4800;
+	public static final double	ACC_FACTOR = 2400.0;	// 24h = 36s
 	/** delay to start the real time simulations on every model at the
 	 *  same moment (the order is delivered to the models during this
 	 *  delay; this delay must be ample enough to give the time to notify
@@ -45,7 +43,7 @@ extends AbstractCVM
 	 *  a value that depends upon the complexity of the simulation architecture
 	 *  to be traversed and the component deployment (deployments on several
 	 *  JVM and even more several computers require a larger delay.			*/
-	public static final long	DELAY_TO_START_SIMULATION = 3000L;
+	public static final long	DELAY_TO_START_SIMULATION = 5000L;
 	/** duration  of the simulation in hours.								*/
 	public static final double	SIMULATION_DURATION = 24.0;
 
@@ -71,4 +69,86 @@ extends AbstractCVM
 		
 	}
 
+	// -------------------------------------------------------------------------
+	// Component virtual machine life-cycle
+	// -------------------------------------------------------------------------
+
+	/**
+	 * @see fr.sorbonne_u.components.cvm.AbstractCVM#deploy()
+	 */
+	@Override
+	public void			deploy() throws Exception
+	{
+		boolean isUnderTest = true;
+		boolean isUnitTesting = true;
+		boolean isSimulated = true;
+		String simArchitectureURI = "unit-test";
+
+		// that the actual Unix epoch start time for all components, set in
+		// the centralised clock
+		EXECUTION_START =
+				System.currentTimeMillis() + DELAY_TO_START_SIMULATION;
+
+		// the accelerated clock and the clock server used to synchronise
+		// simulations and test scenarios
+		AbstractComponent.createComponent(
+				ClockServer.class.getCanonicalName(),
+				new Object[]{CLOCK_URI,		// create the centralised clock
+							 TimeUnit.MILLISECONDS.toNanos(EXECUTION_START),
+							 Instant.parse(START_INSTANT),
+							 ACC_FACTOR});
+
+		AbstractComponent.createComponent(
+				SolarPanel.class.getCanonicalName(),
+				new Object[]{isUnderTest, isUnitTesting, isSimulated,
+							 simArchitectureURI, ACC_FACTOR, CLOCK_URI});
+
+		AbstractComponent.createComponent(
+				SolarPanel.class.getCanonicalName(),
+				new Object[]{SolarPanel.INBOUND_PORT_URI_PREFIX, false,
+							 CLOCK_URI});
+
+		if (isSimulated) {
+			AbstractComponent.createComponent(
+					UnitTestSupervisor.class.getCanonicalName(),
+					new Object[]{CLOCK_URI});
+		}
+
+		super.deploy();
+	}
+
+	// -------------------------------------------------------------------------
+	// Main
+	// -------------------------------------------------------------------------
+
+	public static void	main(String[] args)
+	{
+		try {
+			ClockServer.VERBOSE = true;
+			CVMUnitTest cvm = new CVMUnitTest();
+			// compute the execution duration in milliseconds from the
+			// simulation duration in hours and the acceleration factor
+			// i.e., the simulation duration times 3600 seconds per hour
+			// times 1000 milliseconds per second divided by the acceleration
+			// factor
+			EXECUTION_DURATION =
+					(long)(SIMULATION_DURATION*3600.0*1000.0/ACC_FACTOR);
+			// start the execution for the above duration, adding the delay to
+			// start the simulation, the tolerance used by the simulation
+			// engine and another second at the end to make sure that the end of
+			// components execution happens after  the end of the simulation and
+			// the execution of the control
+			cvm.startStandardLifeCycle(EXECUTION_DURATION
+										+ DELAY_TO_START_SIMULATION
+											+ AtomicRTEngine.END_TIME_TOLERANCE
+												+ 1000L);
+			// delay to look at the results before closing the trace windows
+			Thread.sleep(10000L);
+			// force the exit
+			System.exit(0);
+		} catch (Exception e) {
+			throw new RuntimeException(e) ;
+		}
+	}
+	
 }

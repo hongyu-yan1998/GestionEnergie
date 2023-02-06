@@ -254,7 +254,7 @@ implements SolarPanelImplementationI {
 	@Override
 	public double getEnergyProduction() throws Exception {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.energy;
 	}
 
 	@Override

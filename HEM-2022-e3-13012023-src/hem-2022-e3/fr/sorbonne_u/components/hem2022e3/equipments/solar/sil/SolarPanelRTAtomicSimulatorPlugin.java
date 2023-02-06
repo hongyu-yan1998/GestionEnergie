@@ -41,9 +41,9 @@ extends RTAtomicSimulatorPlugin
 
 	private static final long serialVersionUID = 1L;
 	
-	/** name used to pass the air conditioner owner component reference as
+	/** name used to pass the solar panel owner component reference as
 	 *  simulation parameter.												*/
-	public static final String	OWNER_RPNAME = "ACCRN";
+	public static final String	OWNER_RPNAME = "SPCRN";
 	
 	// -------------------------------------------------------------------------
 	// DEVS simulation protocol

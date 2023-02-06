@@ -280,7 +280,7 @@ implements	ElectricMeterImplementationI
 	public double		getCurrentConsumption() throws Exception
 	{
 		// TODO
-		return 0.0;
+		return this.emip.getCurrentConsumption();
 	}
 
 	/**
@@ -290,7 +290,7 @@ implements	ElectricMeterImplementationI
 	public double		getCurrentProduction() throws Exception
 	{
 		// TODO
-		return 0.0;
+		return this.emip.getCurrentProduction();
 	}
 }
 // -----------------------------------------------------------------------------
