@@ -9,6 +9,8 @@ package fr.sorbonne_u.components.hem2022e3.equipments.solar;
  * @author	<p>Hongyu YAN & Liuyi CHEN</p>
  */
 public interface SolarPanelImplementationI {
+	public boolean		isOn() throws Exception;
+	
 	public void startProduce() throws Exception;
 	
 	public void stopProduce() throws Exception;

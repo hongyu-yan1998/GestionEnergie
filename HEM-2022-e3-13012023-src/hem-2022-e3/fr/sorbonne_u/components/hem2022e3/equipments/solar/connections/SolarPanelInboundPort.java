@@ -59,4 +59,10 @@ implements SolarPanelCI
 			 });			
 	}
 
+	@Override
+	public boolean isOn() throws Exception {
+		return this.getOwner().handleRequest(
+				o -> ((SolarPanelImplementationI)o).isOn());
+	}
+
 }

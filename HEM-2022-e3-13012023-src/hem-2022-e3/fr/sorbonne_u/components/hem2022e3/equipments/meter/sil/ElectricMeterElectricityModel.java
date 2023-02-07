@@ -39,8 +39,10 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cyphy.plugins.devs.utils.StandardComponentLogger;
 import fr.sorbonne_u.components.hem2022e2.HEM_ReportI;
 import fr.sorbonne_u.components.hem2022e2.utils.Electricity;
+import fr.sorbonne_u.devs_simulation.hioa.annotations.ExportedVariable;
 import fr.sorbonne_u.devs_simulation.hioa.annotations.ImportedVariable;
 import fr.sorbonne_u.devs_simulation.hioa.annotations.InternalVariable;
+import fr.sorbonne_u.devs_simulation.hioa.annotations.ModelExportedVariable;
 import fr.sorbonne_u.devs_simulation.hioa.annotations.ModelImportedVariable;
 import fr.sorbonne_u.devs_simulation.hioa.models.AtomicHIOA;
 import fr.sorbonne_u.devs_simulation.hioa.models.vars.Value;
@@ -93,6 +95,10 @@ import fr.sorbonne_u.devs_simulation.utils.StandardLogger;
 					   type = Double.class)
 @ModelImportedVariable(name = "currentRefrigeratorIntensity",
 					   type = Double.class)
+@ModelImportedVariable(name = "currentSolarPanelIntensity",
+					   type = Double.class)
+@ModelExportedVariable(name = "consumption",
+					   type = Double.class)
 //-----------------------------------------------------------------------------
 public class			ElectricMeterElectricityModel
 extends		AtomicHIOA
@@ -135,6 +141,9 @@ extends		AtomicHIOA
 	/** current intensity of the refrigerator in amperes.					*/
 	@ImportedVariable(type = Double.class)
 	protected Value<Double>			currentRefrigeratorIntensity;
+	/** current intensity of the solar panel in amperes.					*/
+	@ImportedVariable(type = Double.class)
+	protected Value<Double>			currentSolarPanelIntensity;
 
 	/** current total intensity of the house in amperes.					*/
 	@InternalVariable(type = Double.class)
@@ -145,6 +154,9 @@ extends		AtomicHIOA
 	protected final Value<Double>	currentConsumption =
 												new Value<Double>(this);
 
+	/** current intensity in amperes; intensity is power/tension.			*/
+	@ExportedVariable(type = Double.class)
+	protected Value<Double>			consumption = new Value<Double>(this);
 	// -------------------------------------------------------------------------
 	// Constructors
 	// -------------------------------------------------------------------------
@@ -177,6 +189,11 @@ extends		AtomicHIOA
 	// Methods
 	// -------------------------------------------------------------------------
 
+	public double computeCurrentConsumption() {
+		return this.currentConsumption.getValue();
+	}
+	
+	
 	/**
 	 * update the total electricity consumption in kwh given the current
 	 * intensity has been constant for the duration {@code d}.
@@ -197,6 +214,7 @@ extends		AtomicHIOA
 								d, TENSION*this.currentIntensity.getValue());
 		Time t = this.currentConsumption.getTime().add(d);
 		this.currentConsumption.setNewValue(c, t);
+		computeCurrentConsumption();
 	}
 
 	/**
@@ -218,7 +236,8 @@ extends		AtomicHIOA
 				   this.currentHeaterIntensity.getValue() +
 				   this.currentIndoorGardenIntensity.getValue() +
 				   this.currentAirConditionerIntensity.getValue() +
-				   this.currentRefrigeratorIntensity.getValue();
+				   this.currentRefrigeratorIntensity.getValue() +
+				   this.currentSolarPanelIntensity.getValue();
 		// Tracing
 //		if (this.currentIntensity.isInitialised()) {
 //			StringBuffer message = new StringBuffer("current total consumption: ");
@@ -272,7 +291,8 @@ extends		AtomicHIOA
 							this.currentHeaterIntensity.isInitialised() &&
 							this.currentIndoorGardenIntensity.isInitialised() &&
 							this.currentAirConditionerIntensity.isInitialised() &&
-							this.currentRefrigeratorIntensity.isInitialised()) {
+							this.currentRefrigeratorIntensity.isInitialised() &&
+							this.currentSolarPanelIntensity.isInitialised()) {
 			double i = this.computeTotalIntensity();
 			this.currentIntensity.initialise(i);
 			this.currentConsumption.initialise(0.0);

@@ -36,4 +36,9 @@ implements SolarPanelCI {
 		((SolarPanelCI)this.offering).setEnergyProduction(energy);
 	}
 
+	@Override
+	public boolean isOn() throws Exception {
+		return ((SolarPanelCI)this.offering).isOn();
+	}
+
 }

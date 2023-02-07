@@ -40,7 +40,15 @@ import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterCI;
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterImplementationI;
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterInboundPort;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.sil.ElectricMeterCoupledModel;
+import fr.sorbonne_u.components.hem2022e3.equipments.meter.sil.ElectricMeterElectricityModel;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.sil.ElectricMeterRTAtomicSimulatorPlugin;
+import fr.sorbonne_u.devs_simulation.hioa.annotations.ExportedVariable;
+import fr.sorbonne_u.devs_simulation.hioa.annotations.ImportedVariable;
+import fr.sorbonne_u.devs_simulation.hioa.annotations.ModelImportedVariable;
+import fr.sorbonne_u.devs_simulation.hioa.models.vars.Value;
+import fr.sorbonne_u.devs_simulation.models.events.AbstractAtomicSinkReference;
+import fr.sorbonne_u.devs_simulation.models.interfaces.ModelI;
+import fr.sorbonne_u.devs_simulation.models.time.Time;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
 // -----------------------------------------------------------------------------
@@ -280,7 +288,17 @@ implements	ElectricMeterImplementationI
 	public double		getCurrentConsumption() throws Exception
 	{
 		// TODO
-		return this.emip.getCurrentConsumption();
+		System.out.println("EM");
+		Time model = this.simulatorPlugin.computeCurrentSimulationTime(ElectricMeterElectricityModel.URI);
+				//.getAtomicEngineReference(ElectricMeterElectricityModel.URI);
+		System.out.println("EM1");
+		System.out.println(model);
+//		assert model instanceof ElectricMeterElectricityModel;
+		System.out.println("EM2");
+		//ElectricMeterElectricityModel meter = (ElectricMeterElectricityModel)model;
+		//System.out.println(meter.computeCurrentConsumption());
+				//getActualExportedVariableValueReference(ElectricMeterElectricityModel.URI, "consumption", Double.class));
+		return 0.0;
 	}
 
 	/**
@@ -290,7 +308,7 @@ implements	ElectricMeterImplementationI
 	public double		getCurrentProduction() throws Exception
 	{
 		// TODO
-		return this.emip.getCurrentProduction();
+		return 0.0;
 	}
 }
 // -----------------------------------------------------------------------------

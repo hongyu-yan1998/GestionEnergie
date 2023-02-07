@@ -30,4 +30,6 @@ extends OfferedCI,
 	@Override
 	public void setEnergyProduction(double energy) throws Exception;
 
+	@Override
+	public boolean isOn() throws Exception;
 }

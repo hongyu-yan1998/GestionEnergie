@@ -56,6 +56,9 @@ import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.DoN
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.Run;
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.StartRefrigerator;
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.StopRefrigerator;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.SolarPanelElectricityModel;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarNotProduce;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarProduce;
 import fr.sorbonne_u.devs_simulation.architectures.RTArchitecture;
 import fr.sorbonne_u.devs_simulation.architectures.SimulationEngineCreationMode;
 import fr.sorbonne_u.devs_simulation.hioa.architectures.RTAtomicHIOA_Descriptor;
@@ -119,6 +122,8 @@ extends		RTAtomicSimulatorPlugin
 		Map<String, Object> simParams
 		) throws Exception
 	{
+		
+		System.out.println("EMPlugin"+getURI());
 		// initialise the simulation parameter giving the reference to the
 		// owner component before passing the parameters to the simulation
 		// models
@@ -136,7 +141,8 @@ extends		RTAtomicSimulatorPlugin
 	// -------------------------------------------------------------------------
 	// Methods
 	// -------------------------------------------------------------------------
-
+	
+	
 	/**
 	 * create and set the simulation architecture internal to this component.
 	 * 
@@ -222,6 +228,17 @@ extends		RTAtomicSimulatorPlugin
 						SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
 						accFactor));
 		
+		// Solar Panel
+		atomicModelDescriptors.put(
+				SolarPanelElectricityModel.URI,
+				RTAtomicHIOA_Descriptor.create(
+						SolarPanelElectricityModel.class,
+						SolarPanelElectricityModel.URI,
+						TimeUnit.HOURS,
+						null,
+						SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
+						accFactor));
+		
 		atomicModelDescriptors.put(
 				ElectricMeterElectricityModel.URI,
 				RTAtomicHIOA_Descriptor.create(
@@ -240,6 +257,8 @@ extends		RTAtomicSimulatorPlugin
 		submodels.add(ElectricMeterElectricityModel.URI);
 		submodels.add(AirConditionerElectricityModel.URI);
 		submodels.add(RefrigeratorElectricityModel.URI);
+		submodels.add(SolarPanelElectricityModel.URI);
+
 
 		bindings.put(
 				new VariableSource("currentIntensity",
@@ -287,6 +306,17 @@ extends		RTAtomicSimulatorPlugin
 						   RefrigeratorElectricityModel.URI),
 				new VariableSink[] {
 						new VariableSink("currentRefrigeratorIntensity",
+										 Double.class,
+										 ElectricMeterElectricityModel.URI)
+				});
+		
+		// Solar Panel
+		bindings.put(
+				new VariableSource("currentIntensity",
+						   Double.class,
+						   SolarPanelElectricityModel.URI),
+				new VariableSink[] {
+						new VariableSink("currentSolarPanelIntensity",
 										 Double.class,
 										 ElectricMeterElectricityModel.URI)
 				});
@@ -386,6 +416,28 @@ extends		RTAtomicSimulatorPlugin
 				 new EventSink[] {
 						 new EventSink(RefrigeratorElectricityModel.URI,
 								 		DoNotRun.class)
+				 });
+		
+		// Solar Panel
+		bindings.put(
+				new VariableSource("currentIntensity",
+						   Double.class,
+						   SolarPanelElectricityModel.URI),
+				new VariableSink[] {
+						new VariableSink("currentSolarPanelIntensity",
+										 Double.class,
+										 ElectricMeterElectricityModel.URI)
+				});
+		
+		imported.put(SolarProduce.class,
+				 new EventSink[] {
+						 new EventSink(SolarPanelElectricityModel.URI,
+								 SolarProduce.class)
+				 });
+		imported.put(SolarNotProduce.class,
+				 new EventSink[] {
+						 new EventSink(SolarPanelElectricityModel.URI,
+								 SolarNotProduce.class)
 				 });
 
 		// coupled model descriptor

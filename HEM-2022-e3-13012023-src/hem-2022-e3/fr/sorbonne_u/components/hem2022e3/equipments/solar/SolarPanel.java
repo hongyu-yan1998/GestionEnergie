@@ -16,6 +16,7 @@ import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.SolarPanelRTAtomi
 import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.SolarPanelStateModel;
 import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarNotProduce;
 import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarProduce;
+import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
 /**
@@ -35,6 +36,15 @@ public class SolarPanel
 extends AbstractCyPhyComponent 
 implements SolarPanelImplementationI {
 	// -------------------------------------------------------------------------
+	// Inner classes and types
+	// -------------------------------------------------------------------------
+
+	public static enum State {
+		OFF,
+		ON,
+	}
+	
+	// -------------------------------------------------------------------------
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
@@ -48,6 +58,9 @@ implements SolarPanelImplementationI {
 
 	/** inbound port offering the <code>SolarPanelCI</code> interface.		*/
 	protected SolarPanelInboundPort	sip;
+	
+	/** current state of the solar panel.									*/
+	protected State									currentState;
 	
 	/** energy produced.	*/
 	protected double			energy = 0;
@@ -107,6 +120,7 @@ implements SolarPanelImplementationI {
 		this.accFactor = accFactor;
 		this.clockURI = clockURI;
 		
+		this.currentState = State.OFF;
 		this.sip = new SolarPanelInboundPort(
 				SolarPanel.INBOUND_PORT_URI_PREFIX, this);
 		this.sip.publishPort();
@@ -195,6 +209,12 @@ implements SolarPanelImplementationI {
 
 	@Override
 	public void startProduce() throws Exception {
+		assert	!isOn() : new PreconditionException("!isOn()");
+
+		if (VERBOSE) {
+			this.traceMessage("Solar panel is producing.\n");
+		}
+
 		this.traceMessage("the solar panel starts producing.\n");
 		if (this.isSimulated) {
 			try {
@@ -220,10 +240,20 @@ implements SolarPanelImplementationI {
 										+ " the solar panel starts producing.\n");
 			}
 		}
+		
+		this.currentState = State.ON;
+
+		assert	isOn() : new PostconditionException("isOn()");
 	}
 	
 	@Override
 	public void stopProduce() throws Exception {
+		assert isOn() : new PreconditionException("isOn()");
+
+		if (VERBOSE) {
+			this.traceMessage("Not produce.\n");
+		}
+		
 		this.traceMessage("the solar panel stops producing.\n");
 		if (this.isSimulated) {
 			try {
@@ -246,9 +276,13 @@ implements SolarPanelImplementationI {
 			// nothing is done.
 			if (VERBOSE) {
 				System.out.print(this.clock.currentInstant()
-										+ " switch the indoor garden off.\n");
+										+ " the solar panel stops producing.\n");
 			}
 		}
+		
+		this.currentState = State.OFF;
+
+		assert !isOn() : new PostconditionException("!isOn()");
 	}
 
 	@Override
@@ -262,5 +296,15 @@ implements SolarPanelImplementationI {
 	public void setEnergyProduction(double energy) throws Exception {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean isOn() throws Exception {
+		if (VERBOSE) {
+			this.traceMessage("Solar panel is on? " +
+								(this.currentState != State.OFF) + ".\n");
+		}
+
+		return this.currentState != State.OFF;
 	}
 }

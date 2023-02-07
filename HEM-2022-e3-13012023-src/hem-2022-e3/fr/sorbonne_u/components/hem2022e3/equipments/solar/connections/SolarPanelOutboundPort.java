@@ -49,4 +49,9 @@ implements SolarPanelCI
 		((SolarPanelCI)this.getConnector()).setEnergyProduction(energy);	
 	}
 
+	@Override
+	public boolean isOn() throws Exception {
+		return ((SolarPanelCI)this.getConnector()).isOn();
+	}
+
 }

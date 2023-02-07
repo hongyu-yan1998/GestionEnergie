@@ -78,6 +78,10 @@ import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.Swi
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchOnIndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.ElectricMeter;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.sil.ElectricMeterCoupledModel;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.SolarPanel;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.SolarPanelStateModel;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarNotProduce;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.sil.events.SolarProduce;
 import fr.sorbonne_u.devs_simulation.architectures.SimulationEngineCreationMode;
 import fr.sorbonne_u.devs_simulation.models.architectures.AbstractAtomicModelDescriptor;
 import fr.sorbonne_u.devs_simulation.models.architectures.CoupledModelDescriptor;
@@ -350,6 +354,23 @@ extends		AbstractCyPhyComponent
 						AirConditioner.REFLECTION_INBOUND_PORT_URI));
 		// add it to the submodels
 		submodels.add(AirConditionerStateModel.URI);
+		
+		// ---------------------------------------------------------------------
+		// Solar panel models
+		// ---------------------------------------------------------------------
+
+		// the model associated to the AirConditioner component
+		atomicModelDescriptors.put(
+				SolarPanelStateModel.URI,
+				RTComponentAtomicModelDescriptor.create(
+						SolarPanelStateModel.URI,
+						new Class[]{},
+						new Class[]{SolarProduce.class,
+									SolarNotProduce.class},
+						TimeUnit.HOURS,
+						SolarPanel.REFLECTION_INBOUND_PORT_URI));
+		// add it to the submodels
+		submodels.add(SolarPanelStateModel.URI);
 
 		// ---------------------------------------------------------------------
 		// Electric meter models
@@ -370,7 +391,9 @@ extends		AbstractCyPhyComponent
 							SwitchLightOnIndoorGarden.class,
 							SwitchLightOffIndoorGarden.class,
 							TurnOnAirConditioner.class,
-							TurnOffAirConditioner.class},
+							TurnOffAirConditioner.class,
+							SolarProduce.class,
+							SolarNotProduce.class},
 					new Class[]{},
 					TimeUnit.HOURS,
 					ElectricMeter.REFLECTION_INBOUND_PORT_URI));
@@ -476,6 +499,23 @@ extends		AbstractCyPhyComponent
 			new EventSink[] {
 					new EventSink(ElectricMeterCoupledModel.URI,
 								  TurnOffAirConditioner.class)
+			});
+		
+		// connections exchanging events from the SolarPanel component to
+		// the ElectricMeter component
+		connections.put(
+			new EventSource(SolarPanelStateModel.URI,
+							SolarProduce.class), 
+			new EventSink[] {
+					new EventSink(ElectricMeterCoupledModel.URI,
+							SolarProduce.class)
+			});
+		connections.put(
+			new EventSource(SolarPanelStateModel.URI,
+							SolarNotProduce.class), 
+			new EventSink[] {
+					new EventSink(ElectricMeterCoupledModel.URI,
+							SolarNotProduce.class)
 			});
 		
 		// ---------------------------------------------------------------------

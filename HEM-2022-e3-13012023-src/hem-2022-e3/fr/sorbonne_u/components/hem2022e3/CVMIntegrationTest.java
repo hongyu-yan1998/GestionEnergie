@@ -45,6 +45,8 @@ import fr.sorbonne_u.components.hem2022e3.equipments.hem.HEM;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.IndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.test.IndoorGardenTester;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.ElectricMeter;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.SolarPanel;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.test.SolarPanelTester;
 import fr.sorbonne_u.devs_simulation.simulators.AtomicRTEngine;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -261,6 +263,25 @@ extends		AbstractCVM
 				AirConditionerTester.class.getCanonicalName(),
 				new Object[]{AirConditioner.INBOUND_PORT_URI_PREFIX,
 							 IS_UNIT_TEST,
+							 CLOCK_URI});
+		
+		// ---------------------------------------------------------------------
+		// Solar panel components
+		// ---------------------------------------------------------------------
+		AbstractComponent.createComponent(
+				SolarPanel.class.getCanonicalName(),
+				new Object[]{IS_UNDER_TEST,
+							 IS_UNIT_TEST,
+							 IS_SIMULATED,
+							 IntegrationTestSupervisor.SIM_ARCHITECTURE_URI,
+							 ACC_FACTOR,
+							 CLOCK_URI});
+		// tester component for the air conditioner that needs the clock to
+		// schedule its test scenario actions
+		AbstractComponent.createComponent(
+				SolarPanelTester.class.getCanonicalName(),
+				new Object[]{SolarPanel.INBOUND_PORT_URI_PREFIX,
+//							 IS_UNIT_TEST,
 							 CLOCK_URI});
 
 		// ---------------------------------------------------------------------

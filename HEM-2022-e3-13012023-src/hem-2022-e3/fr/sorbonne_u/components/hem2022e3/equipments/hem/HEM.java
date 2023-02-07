@@ -45,7 +45,6 @@ import fr.sorbonne_u.components.hem2022.interfaces.StandardEquipmentControlCI;
 import fr.sorbonne_u.components.hem2022.interfaces.SuspensionAndPlanningEquipmentControlCI;
 import fr.sorbonne_u.components.hem2022.interfaces.SuspensionEquipmentControlCI;
 import fr.sorbonne_u.components.hem2022e1.equipments.hem.HeaterConnector;
-import fr.sorbonne_u.components.hem2022e1.equipments.hem.IndoorGardenConnector;
 import fr.sorbonne_u.components.hem2022e1.equipments.hem.SuspensionAndPlanningEquipmentControlOutboundPort;
 import fr.sorbonne_u.components.hem2022e1.equipments.hem.SuspensionEquipmentControlOutboundPort;
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterCI;
@@ -53,6 +52,9 @@ import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterConnecto
 import fr.sorbonne_u.components.hem2022e1.equipments.meter.ElectricMeterOutboundPort;
 import fr.sorbonne_u.components.hem2022e3.equipments.airconditioner.AirConditioner;
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.Refrigerator;
+import fr.sorbonne_u.components.hem2022e3.equipments.solar.SolarPanel;
+import fr.sorbonne_u.components.hem2022e3.interfaces.ProductionEquipmentControlCI;
+import fr.sorbonne_u.components.hem2022e3.production.ProductionEquipmentControlOutboundPort;
 import fr.sorbonne_u.components.hem2022e3.equipments.heater.ThermostatedHeater;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.IndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.meter.ElectricMeter;
@@ -97,7 +99,8 @@ import java.util.concurrent.TimeUnit;
 								SuspensionEquipmentControlCI.class,
 								SuspensionAndPlanningEquipmentControlCI.class,
 								ElectricMeterCI.class,
-								ClockServerCI.class})
+								ClockServerCI.class,
+								ProductionEquipmentControlCI.class})
 //-----------------------------------------------------------------------------
 public class			HEM
 extends		AbstractComponent
@@ -116,6 +119,8 @@ extends		AbstractComponent
 	protected SuspensionAndPlanningEquipmentControlOutboundPort	indoorGardenop;
 	/** outbound port connecting to to the air conditioner component.			*/
 	protected SuspensionAndPlanningEquipmentControlOutboundPort	airConditionerop;
+	/** outbound port connecting to to the solar panel component.			*/
+	protected ProductionEquipmentControlOutboundPort	solarPanelop;
 
 	/** standard control period in seconds.									*/
 	protected static final double		STANDARD_CONTROL_PERIOD = 60.0;
@@ -217,6 +222,14 @@ extends		AbstractComponent
 					this.airConditionerop.getPortURI(),
 					AirConditioner.INBOUND_PORT_URI_PREFIX,
 					AirConditionerConnector.class.getCanonicalName());
+			
+			this.solarPanelop =
+					new ProductionEquipmentControlOutboundPort(this);
+			this.solarPanelop.publishPort();
+			this.doPortConnection(
+					this.solarPanelop.getPortURI(),
+					SolarPanel.INBOUND_PORT_URI_PREFIX,
+					SolarPanelConnector.class.getCanonicalName());
 
 			if (this.isUnderTest) {
 				this.clockServerOBP = new ClockServerOutboundPort(this);
@@ -263,6 +276,7 @@ extends		AbstractComponent
 //		this.doPortDisconnection(this.refrigeratorop.getPortURI());
 		this.doPortDisconnection(this.indoorGardenop.getPortURI());
 		this.doPortDisconnection(this.airConditionerop.getPortURI());
+		this.doPortDisconnection(this.solarPanelop.getPortURI());
 		super.finalise();
 	}
 
@@ -275,6 +289,7 @@ extends		AbstractComponent
 //			this.refrigeratorop.unpublishPort();
 			this.indoorGardenop.unpublishPort();
 			this.airConditionerop.unpublishPort();
+			this.solarPanelop.unpublishPort();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e) ;
 		}
