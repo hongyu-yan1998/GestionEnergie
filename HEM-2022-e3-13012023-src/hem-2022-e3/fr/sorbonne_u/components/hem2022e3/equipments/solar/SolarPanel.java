@@ -1,8 +1,8 @@
 package fr.sorbonne_u.components.hem2022e3.equipments.solar;
 
-import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
+import fr.sorbonne_u.components.cyphy.AbstractCyPhyComponent;
 import fr.sorbonne_u.components.cyphy.tools.aclocks.AcceleratedClock;
 import fr.sorbonne_u.components.cyphy.tools.aclocks.ClockServer;
 import fr.sorbonne_u.components.cyphy.tools.aclocks.ClockServerCI;
@@ -32,7 +32,7 @@ import fr.sorbonne_u.exceptions.PreconditionException;
 @RequiredInterfaces(required={ClockServerCI.class})
 //-----------------------------------------------------------------------------
 public class SolarPanel 
-extends AbstractComponent 
+extends AbstractCyPhyComponent 
 implements SolarPanelImplementationI {
 	// -------------------------------------------------------------------------
 	// Constants and variables
@@ -112,8 +112,8 @@ implements SolarPanelImplementationI {
 		this.sip.publishPort();
 		
 		if (VERBOSE) {
-			this.tracer.get().setTitle("Air conditioner component");
-			this.tracer.get().setRelativePosition(3, 3);
+			this.tracer.get().setTitle("Solar panel component");
+			this.tracer.get().setRelativePosition(2, 3);
 			this.toggleTracing();		
 		}
 	}

@@ -51,7 +51,7 @@ implements SolarPanelOperationI
 															getSimpleName();
 
 	/** power of the scolar panel in watts.										*/
-	public static double		SCOLAR_POWER = 100.0;
+	public static double		SCOLAR_POWER = 200.0;
 	/** conversion efficiency of the solar panel 								*/
 	public static double 		SCOLAR_EFFICIENCY = 0.75;
 	/** current state.														*/

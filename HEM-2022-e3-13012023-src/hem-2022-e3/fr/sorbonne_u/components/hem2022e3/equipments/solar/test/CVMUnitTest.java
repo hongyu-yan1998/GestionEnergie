@@ -57,7 +57,7 @@ extends AbstractCVM
 	protected static long		EXECUTION_DURATION;
 	/** URI used to create the centralised clock on the {@code ClockServer}
 	 *  and then to retrieve it from the participant components.		 	*/
-	public static final String	CLOCK_URI = "refrigerator-clock";
+	public static final String	CLOCK_URI = "solar-panel-clock";
 
 
 	// -------------------------------------------------------------------------
@@ -104,8 +104,8 @@ extends AbstractCVM
 							 simArchitectureURI, ACC_FACTOR, CLOCK_URI});
 
 		AbstractComponent.createComponent(
-				SolarPanel.class.getCanonicalName(),
-				new Object[]{SolarPanel.INBOUND_PORT_URI_PREFIX, false,
+				SolarPanelTester.class.getCanonicalName(),
+				new Object[]{SolarPanel.INBOUND_PORT_URI_PREFIX,
 							 CLOCK_URI});
 
 		if (isSimulated) {
