@@ -186,10 +186,11 @@ implements SolarPanelOperationI
 		{
 			case OFF: this.currentIntensity.setNewValue(0.0, t); break;
 			case ON:
+				System.out.println("solar on with intensity:" + this.currentIntensity.getValue());
 				this.currentIntensity.
 							setNewValue(SCOLAR_POWER * SCOLAR_EFFICIENCY, t);
 		}
-
+		
 		// Tracing
 		StringBuffer message =
 				new StringBuffer("executes an internal transition ");

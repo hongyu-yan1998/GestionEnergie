@@ -1,36 +1,13 @@
-package fr.sorbonne_u.components.hem2022e3.equipments.meter.sil;
+/**
+ * 
+ */
+package fr.sorbonne_u.components.hem2022e3.equipments.battery.sil;
 
-// Copyright Jacques Malenfant, Sorbonne Universite.
-// Jacques.Malenfant@lip6.fr
-//
-// This software is a computer program whose purpose is to provide a
-// new implementation of the DEVS simulation standard for Java.
-//
-// This software is governed by the CeCILL-C license under French law and
-// abiding by the rules of distribution of free software.  You can use,
-// modify and/ or redistribute the software under the terms of the
-// CeCILL-C license as circulated by CEA, CNRS and INRIA at the following
-// URL "http://www.cecill.info".
-//
-// As a counterpart to the access to the source code and  rights to copy,
-// modify and redistribute granted by the license, users are provided only
-// with a limited warranty  and the software's author,  the holder of the
-// economic rights,  and the successive licensors  have only  limited
-// liability. 
-//
-// In this respect, the user's attention is drawn to the risks associated
-// with loading,  using,  modifying and/or developing or reproducing the
-// software by the user in light of its specific status of free software,
-// that may mean  that it is complicated to manipulate,  and  that  also
-// therefore means  that it is reserved for developers  and  experienced
-// professionals having in-depth computer knowledge. Users are therefore
-// encouraged to load and test the software's suitability as regards their
-// requirements in conditions enabling the security of their systems and/or 
-// data to be ensured and,  more generally, to use and operate it in the 
-// same conditions as regards security. 
-//
-// The fact that you are presently reading this means that you have had
-// knowledge of the CeCILL-C license and that you accept its terms.
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import fr.sorbonne_u.components.cyphy.plugins.devs.RTAtomicSimulatorPlugin;
 import fr.sorbonne_u.components.hem2022e3.equipments.airconditioner.sil.AirConditionerElectricityModel;
@@ -42,7 +19,6 @@ import fr.sorbonne_u.components.hem2022e3.equipments.hairdryer.sil.events.SetLow
 import fr.sorbonne_u.components.hem2022e3.equipments.hairdryer.sil.events.SwitchOffHairDryer;
 import fr.sorbonne_u.components.hem2022e3.equipments.hairdryer.sil.events.SwitchOnHairDryer;
 import fr.sorbonne_u.components.hem2022e3.equipments.heater.sil.HeaterElectricityModel;
-import fr.sorbonne_u.components.hem2022e3.equipments.heater.sil.HeaterTemperatureModel;
 import fr.sorbonne_u.components.hem2022e3.equipments.heater.sil.events.DoNotHeat;
 import fr.sorbonne_u.components.hem2022e3.equipments.heater.sil.events.Heat;
 import fr.sorbonne_u.components.hem2022e3.equipments.heater.sil.events.SwitchOffHeater;
@@ -52,6 +28,7 @@ import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.Swi
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchLightOnIndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchOffIndoorGarden;
 import fr.sorbonne_u.components.hem2022e3.equipments.indoorgarden.sil.events.SwitchOnIndoorGarden;
+import fr.sorbonne_u.components.hem2022e3.equipments.meter.sil.ElectricMeterElectricityModel;
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.RefrigeratorElectricityModel;
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.DoNotRun;
 import fr.sorbonne_u.components.hem2022e3.equipments.refrigerator.sil.events.Run;
@@ -71,41 +48,19 @@ import fr.sorbonne_u.devs_simulation.models.architectures.CoupledModelDescriptor
 import fr.sorbonne_u.devs_simulation.models.events.EventI;
 import fr.sorbonne_u.devs_simulation.models.events.EventSink;
 import fr.sorbonne_u.devs_simulation.models.events.EventSource;
-import fr.sorbonne_u.devs_simulation.models.time.Duration;
-import fr.sorbonne_u.devs_simulation.models.time.Time;
-import fr.sorbonne_u.devs_simulation.models.time.TimeUtils;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-// -----------------------------------------------------------------------------
 /**
- * The class <code>ElectricMeterRTAtomicSimulatorPlugin</code>
+ * The class <code>BatteryRTAtomicSimulatorPlugin</code> 
  *
  * <p><strong>Description</strong></p>
  * 
- * <p><strong>White-box Invariant</strong></p>
+ * <p>Created on : 2023/2/8</p>
  * 
- * <pre>
- * invariant	{@code true}	// TODO	// no more invariant
- * </pre>
- * 
- * <p><strong>Black-box Invariant</strong></p>
- * 
- * <pre>
- * invariant	{@code OWNER_RPNAME != null && !OWNER_RPNAME.isEmpty()}
- * </pre>
- * 
- * <p>Created on : 2022-11-21</p>
- * 
- * @author	<a href="mailto:Jacques.Malenfant@lip6.fr">Jacques Malenfant</a>
+ * @author	<p>Hongyu YAN & Liuyi CHEN</p>
  */
-public class			ElectricMeterRTAtomicSimulatorPlugin
-extends		RTAtomicSimulatorPlugin
+public class BatteryRTAtomicSimulatorPlugin 
+extends RTAtomicSimulatorPlugin 
 {
 	// -------------------------------------------------------------------------
 	// Constants and variables
@@ -114,8 +69,8 @@ extends		RTAtomicSimulatorPlugin
 	private static final long serialVersionUID = 1L;
 	/** name used to pass the owner component reference as simulation
 	 *  parameter.															*/
-	public static final String	OWNER_RPNAME = "EMCRN";
-
+	public static final String	OWNER_RPNAME = "BATTRYCRN";
+	
 	// -------------------------------------------------------------------------
 	// DEVS simulation protocol
 	// -------------------------------------------------------------------------
@@ -145,50 +100,6 @@ extends		RTAtomicSimulatorPlugin
 	// -------------------------------------------------------------------------
 	// Methods
 	// -------------------------------------------------------------------------
-	
-	/**
-	 * Get the total electricity consumption at the current time through the URI 
-	 * of the electric meter model
-	 * */
-	public double getTotalConsumption() {
-		try {
-			String uri = ElectricMeterElectricityModel.URI;
-			ElectricMeterElectricityModel m =
-				(ElectricMeterElectricityModel)
-					this.simulator.getDescendentModel(ElectricMeterElectricityModel.URI);
-			assert m instanceof ElectricMeterElectricityModel:
-				new AssertionError(uri + " is not the URI of a "
-								+ ElectricMeterElectricityModel.class.getSimpleName()
-								+ " model !");
-				assert uri != null && !uri.isEmpty() :
-					new PreconditionException("uri not defined");
-			return ((ElectricMeterElectricityModel)m).computeTotalConsumption();
-		} catch (Exception e) {
-			throw new RuntimeException(e) ;
-		}
-	} 
-	
-	/**
-	 * Get the total electricity production at the current time through the URI 
-	 * of the electric meter model
-	 * */
-	public double getTotalProduction() {
-		try {
-			String uri = ElectricMeterElectricityModel.URI;
-			ElectricMeterElectricityModel m =
-				(ElectricMeterElectricityModel)
-					this.simulator.getDescendentModel(ElectricMeterElectricityModel.URI);
-			assert m instanceof ElectricMeterElectricityModel:
-				new AssertionError(uri + " is not the URI of a "
-								+ ElectricMeterElectricityModel.class.getSimpleName()
-								+ " model !");
-				assert uri != null && !uri.isEmpty() :
-					new PreconditionException("uri not defined");
-			return ((ElectricMeterElectricityModel)m).computeTotalProduction();
-		} catch (Exception e) {
-			throw new RuntimeException(e) ;
-		}
-	} 
 	
 	/**
 	 * create and set the simulation architecture internal to this component.
@@ -287,15 +198,15 @@ extends		RTAtomicSimulatorPlugin
 						accFactor));
 		
 		atomicModelDescriptors.put(
-				ElectricMeterElectricityModel.URI,
+				BatteryElectricityModel.URI,
 				RTAtomicHIOA_Descriptor.create(
-						ElectricMeterElectricityModel.class,
-						ElectricMeterElectricityModel.URI,
+						BatteryElectricityModel.class,
+						BatteryElectricityModel.URI,
 						TimeUnit.HOURS,
 						null,
 						SimulationEngineCreationMode.ATOMIC_RT_ENGINE,
 						accFactor));
-
+		
 		// the set of submodels of the coupled model, given by their URIs
 		Set<String> submodels = new HashSet<String>();
 		submodels.add(HairDryerElectricityModel.URI);
@@ -305,8 +216,8 @@ extends		RTAtomicSimulatorPlugin
 		submodels.add(AirConditionerElectricityModel.URI);
 		submodels.add(RefrigeratorElectricityModel.URI);
 		submodels.add(SolarPanelElectricityModel.URI);
-
-
+		submodels.add(BatteryElectricityModel.URI);
+		
 		bindings.put(
 				new VariableSource("currentIntensity",
 						   Double.class,
@@ -314,7 +225,7 @@ extends		RTAtomicSimulatorPlugin
 				new VariableSink[] {
 						new VariableSink("currentHairDryerIntensity",
 										 Double.class,
-										 ElectricMeterElectricityModel.URI)
+										 BatteryElectricityModel.URI)
 				});
 		bindings.put(
 				new VariableSource("currentIntensity",
@@ -323,7 +234,7 @@ extends		RTAtomicSimulatorPlugin
 				new VariableSink[] {
 						new VariableSink("currentHeaterIntensity",
 										 Double.class,
-										 ElectricMeterElectricityModel.URI)
+										 BatteryElectricityModel.URI)
 				});
 		bindings.put(
 				new VariableSource("currentIntensity",
@@ -332,7 +243,7 @@ extends		RTAtomicSimulatorPlugin
 				new VariableSink[] {
 						new VariableSink("currentIndoorGardenIntensity",
 										 Double.class,
-										 ElectricMeterElectricityModel.URI)
+										 BatteryElectricityModel.URI)
 				});
 		
 		// Air Conditioner
@@ -343,8 +254,8 @@ extends		RTAtomicSimulatorPlugin
 				new VariableSink[] {
 						new VariableSink("currentAirConditionerIntensity",
 										 Double.class,
-										 ElectricMeterElectricityModel.URI)
-				});
+										 BatteryElectricityModel.URI)
+				});		
 		
 		// Refrigerator
 		bindings.put(
@@ -354,8 +265,8 @@ extends		RTAtomicSimulatorPlugin
 				new VariableSink[] {
 						new VariableSink("currentRefrigeratorIntensity",
 										 Double.class,
-										 ElectricMeterElectricityModel.URI)
-				});
+										 BatteryElectricityModel.URI)
+				});	
 		
 		// Solar Panel
 		bindings.put(
@@ -365,14 +276,14 @@ extends		RTAtomicSimulatorPlugin
 				new VariableSink[] {
 						new VariableSink("currentSolarPanelIntensity",
 										 Double.class,
-										 ElectricMeterElectricityModel.URI)
-				});
-
+										 BatteryElectricityModel.URI)
+				});		
+		
 		imported.put(SwitchOnHairDryer.class,
-					 new EventSink[] {
-							 new EventSink(HairDryerElectricityModel.URI,
-									 	   SwitchOnHairDryer.class)
-					 });
+				 new EventSink[] {
+						 new EventSink(HairDryerElectricityModel.URI,
+								 	   SwitchOnHairDryer.class)
+				 });
 		imported.put(SwitchOffHairDryer.class,
 					 new EventSink[] {
 							 new EventSink(HairDryerElectricityModel.URI,
@@ -388,7 +299,7 @@ extends		RTAtomicSimulatorPlugin
 							 new EventSink(HairDryerElectricityModel.URI,
 									 	   SetHighHairDryer.class)
 					 });
-
+	
 		imported.put(SwitchOnHeater.class,
 					 new EventSink[] {
 							 new EventSink(HeaterElectricityModel.URI,
@@ -409,7 +320,7 @@ extends		RTAtomicSimulatorPlugin
 							 new EventSink(HeaterElectricityModel.URI,
 									 	   DoNotHeat.class)
 					 });
-
+	
 		imported.put(SwitchOnIndoorGarden.class,
 					 new EventSink[] {
 							 new EventSink(IndoorGardenElectricityModel.URI,
@@ -476,13 +387,13 @@ extends		RTAtomicSimulatorPlugin
 						 new EventSink(SolarPanelElectricityModel.URI,
 								 SolarNotProduce.class)
 				 });
-
+	
 		// coupled model descriptor
 		coupledModelDescriptors.put(
-				ElectricMeterCoupledModel.URI,
+				BatteryCoupledModel.URI,
 				new RTCoupledHIOA_Descriptor(
-						ElectricMeterCoupledModel.class,
-						ElectricMeterCoupledModel.URI,
+						BatteryCoupledModel.class,
+						BatteryCoupledModel.URI,
 						submodels,
 						imported,
 						null,
@@ -498,12 +409,10 @@ extends		RTAtomicSimulatorPlugin
 		this.setSimulationArchitecture(
 				new RTArchitecture(
 						simArchURI,
-						ElectricMeterCoupledModel.URI,
+						BatteryCoupledModel.URI,
 						atomicModelDescriptors,
 						coupledModelDescriptors,
 						TimeUnit.HOURS,
-						accFactor));
-
+						accFactor));		
 	}
 }
-// -----------------------------------------------------------------------------

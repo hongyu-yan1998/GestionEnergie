@@ -287,18 +287,7 @@ implements	ElectricMeterImplementationI
 	@Override
 	public double		getCurrentConsumption() throws Exception
 	{
-		// TODO
-		System.out.println("EM");
-		Time model = this.simulatorPlugin.computeCurrentSimulationTime(ElectricMeterElectricityModel.URI);
-				//.getAtomicEngineReference(ElectricMeterElectricityModel.URI);
-		System.out.println("EM1");
-		System.out.println(model);
-//		assert model instanceof ElectricMeterElectricityModel;
-		System.out.println("EM2");
-		//ElectricMeterElectricityModel meter = (ElectricMeterElectricityModel)model;
-		//System.out.println(meter.computeCurrentConsumption());
-				//getActualExportedVariableValueReference(ElectricMeterElectricityModel.URI, "consumption", Double.class));
-		return 0.0;
+		return this.simulatorPlugin.getTotalConsumption();
 	}
 
 	/**
@@ -307,8 +296,7 @@ implements	ElectricMeterImplementationI
 	@Override
 	public double		getCurrentProduction() throws Exception
 	{
-		// TODO
-		return 0.0;
+		return this.simulatorPlugin.getTotalProduction();
 	}
 }
 // -----------------------------------------------------------------------------
